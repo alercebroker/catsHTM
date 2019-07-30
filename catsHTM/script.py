@@ -63,7 +63,7 @@ def get_CatDir(CatName):
         CatDir = 'VST/ATLAS/DR3'
     elif CatName == 'VSTkids':
         CatDir = 'VST/KiDS/DR3'
-    elif CatName not in ['AAVSO_VSX', 'AKARI', 'APASS', 'Cosmos', 'CRTS_per_var', 'FIRST', 'GLADE', 'NVSS', 'PTFpc',
+    elif CatName not in ['AAVSO_VSX', 'AKARI', 'APASS', 'Cosmos', 'CRTS_per_var', 'FIRST', 'NVSS', 'PTFpc',
                          'ROSATfsc', 'Simbad_PM200', 'SkyMapper', 'SWIREz', 'UCAC4', 'unWISE', 'WISE', 'XMM']:
         raise ValueError('you need to specify a valid name for the catalog (see README file for list of names)')
     else:
