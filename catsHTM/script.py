@@ -45,8 +45,6 @@ def get_CatDir(CatName):
         CatDir = 'HST/HSCv2'
     elif CatName == 'IPHAS':
         CatDir = 'IPHAS/DR2'
-    elif CatName == 'LAMOST':
-        CatDir = 'LAMOST/DR4'
     elif CatName == 'NEDz':
         CatDir = 'NED/20180502'
     elif CatName == 'SDSSDR10':
