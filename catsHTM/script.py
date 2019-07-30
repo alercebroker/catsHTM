@@ -45,6 +45,8 @@ def get_CatDir(CatName):
         CatDir = 'HST/HSCv2'
     elif CatName == 'IPHAS':
         CatDir = 'IPHAS/DR2'
+    elif CatName == 'LAMOST':
+        CatDir = 'LAMOST/DR4'
     elif CatName == 'NEDz':
         CatDir = 'NED/20180502'
     elif CatName == 'SDSSDR10':
@@ -67,8 +69,8 @@ def get_CatDir(CatName):
         CatDir = 'VST/ATLAS/DR3'
     elif CatName == 'VSTkids':
         CatDir = 'VST/KiDS/DR3'
-    elif CatName not in ['AAVSO_VSX', 'AKARI', 'APASS', 'Cosmos', 'FIRST', 'GLADE', 'LAMOST', 'NVSS', 'PGC', 'PTFpc', 'ROSATfsc',
-                         'SkyMapper', 'SWIREz', 'UCAC4', 'USNOB1', 'unWISE', 'WISE', 'XMM']:
+    elif CatName not in ['AAVSO_VSX', 'AKARI', 'APASS', 'Cosmos', 'FIRST', 'GLADE', 'NVSS', 'PTFpc', 'ROSATfsc',
+                         'SkyMapper', 'SWIREz', 'UCAC4', 'unWISE', 'WISE', 'XMM']:
         raise ValueError('you need to specify a valid name for the catalog (see README file for list of names)')
     else:
         CatDir = CatName
