@@ -128,18 +128,9 @@ def cone_search(CatName,RA,Dec,Radius,catalogs_dir='./data',RadiusUnits='arcsec'
             print('INFO: the cone does not intercept the catalog')
         cat_onlycone=np.array([])
     else:
-        FileName_0 = CatFileTemplate % (CatName, FileID[0])
-        DataName_0 = htmTemplate % ID_matlab[0]
-        cat = class_HDF5.HDF5(root_to_data + CatDir + '/' + FileName_0).load(DataName_0, numpy_array=True).T
-        #print('shape of cat is',np.shape(cat))
-        for Iid in range(Nid)[1:]:
-            FileName=CatFileTemplate % (CatName, FileID[Iid])
-            DataName=htmTemplate % ID_matlab[Iid]
-
-            cat=np.vstack((cat, class_HDF5.HDF5(root_to_data + CatDir + '/' + FileName).load(DataName, numpy_array=True).T))
-        #if OnlyCone==True:
-        D=celestial.sphere_distance_fast(RA,Dec,cat[:,ColRa],cat[:,ColDec])#[0]
-        cat_onlycone=cat[D<Radius,:]
+        FileNames=[root_to_data + CatDir + '/' + CatFileTemplate % (CatName, FileID[Iid]) for Iid in range(Nid)]
+        DataNames=[htmTemplate % ID_matlab[Iid] for Iid in range(Nid)]
+        cat_onlycone=load_trixels_in_cone(FileNames,DataNames,RA,Dec,Radius,ColRa=ColRa,ColDec=ColDec)
 
     ### a colomne with the cell names:
     if cat_onlycone.ndim>1:
@@ -174,6 +165,44 @@ def cone_search(CatName,RA,Dec,Radius,catalogs_dir='./data',RadiusUnits='arcsec'
                 ColUnits[i]=' '
 
     return cat_onlycone,ColCell, ColUnits
+
+def load_trixels_in_cone(FileNames,DataNames,RA,Dec,Radius,ColRa=0,ColDec=1,BlockSize=1000000):
+    """Description: load the sources of a list of trixels that fall within Radius of RA/Dec. Each trixel dataset
+    is read in blocks of BlockSize sources, reading only the RA and Dec rows, and the full rows are read only for
+    the sources inside the cone. Memory stays bounded however large a trixel is (some HSCv2 trixels hold more
+    than 2 GB). A trixel whose file or dataset does not exist is empty of sources and is skipped.
+            Input  : - list of HDF5 file names, one per trixel
+                     - list of dataset names, one per trixel
+                     - RA, Dec and Radius [radians]
+                     - ColRa, ColDec: rows of the datasets holding RA and Dec. Default are 0 and 1.
+                     - BlockSize: number of sources read at a time. Default is 1000000 (16 MB for RA and Dec).
+            Output : - a numpy array with one line per source, in trixel order; np.array([]) if no trixel exists
+                    """
+    cat=[]
+    Ncol=None
+    for FileName,DataName in zip(FileNames,DataNames):
+        if os.path.exists(FileName)==False:
+            continue
+        try:
+            f=h5py.File(FileName,'r')
+        except OSError as e:
+            raise OSError('%s: %s' % (FileName,e)) # h5py does not say which file failed
+        with f:
+            if DataName not in f:
+                continue
+            data=f[DataName]
+            Ncol=data.shape[0]
+            for start in range(0,data.shape[1],BlockSize):
+                stop=min(start+BlockSize,data.shape[1])
+                D=celestial.sphere_distance_fast(RA,Dec,data[ColRa,start:stop],data[ColDec,start:stop])
+                ind=np.flatnonzero(D<Radius)
+                if len(ind)>0:
+                    cat.append(data[:,start+ind].T)
+    if Ncol is None:
+        return np.array([])
+    if len(cat)==0:
+        return np.empty((0,Ncol))
+    return np.vstack(cat)
 
 def search_htm_ind(Filename,Long,Lat,Radius,path,VarName=None,CatDir=None,verbose=False):
     """Description: wrapper of htm_search_cone, which select from the vector outputed by htm_search_cone only the
